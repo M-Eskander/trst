@@ -155,48 +155,8 @@ public class Bootstrap : MonoBehaviour
         firePoint.transform.localPosition = new Vector3(0.6f, 0, 0);
         controller.firePoint = firePoint.transform;
 
-        // Create projectile prefab (standalone, not attached to player)
-        GameObject projPrefab = CreateProjectilePrefab();
-        controller.projectilePrefab = projPrefab;
-
         playerObj.transform.position = new Vector3(0, 0, -1);
         Track(playerObj);
-        Track(projPrefab);
-    }
-
-    GameObject CreateProjectilePrefab()
-    {
-        GameObject proj = new GameObject("ProjectilePrefab");
-        proj.SetActive(false);
-
-        var sr = proj.AddComponent<SpriteRenderer>();
-        Texture2D projTex = ProceduralAssets.CreateProjectileTexture();
-        sr.sprite = Sprite.Create(projTex, new Rect(0, 0, projTex.width, projTex.height), new Vector2(0.5f, 0.5f), 16);
-        sr.sortingOrder = 15;
-
-        var rb = proj.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 0;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-        var collider = proj.AddComponent<CircleCollider2D>();
-        collider.radius = 0.15f;
-        collider.isTrigger = true;
-
-        var trail = proj.AddComponent<TrailRenderer>();
-        trail.time = 0.25f;
-        trail.startWidth = 0.3f;
-        trail.endWidth = 0f;
-        var trailMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        if (trailMat != null)
-        {
-            trail.material = trailMat;
-        }
-        trail.startColor = new Color(0, 1, 1, 0.6f);
-        trail.endColor = new Color(0, 1, 1, 0);
-
-        proj.AddComponent<Projectile>();
-
-        return proj;
     }
 
     public static GameObject CreateEnemyBasePrefab(string name, ProceduralAssets.EnemyType type, Color color)

@@ -52,7 +52,6 @@ public class PlayerController : MonoBehaviour
     public float vampireHealAmount { get; set; }
 
     [Header("References")]
-    public GameObject projectilePrefab;
     public Transform firePoint;
     public SpriteRenderer spriteRenderer;
 
@@ -137,7 +136,9 @@ public class PlayerController : MonoBehaviour
         if (invincibilityTimer > 0)
         {
             invincibilityTimer -= Time.deltaTime;
-            spriteRenderer.enabled = Mathf.Sin(invincibilityTimer * 40f) > 0f;
+            // Show sprite fully during first 0.15s (allows dash grace without blink)
+            // Then blink at a visible rate for remaining invincibility
+            spriteRenderer.enabled = invincibilityTimer > 0.15f || Mathf.Sin(invincibilityTimer * 20f) > 0f;
         }
         else
         {
@@ -200,6 +201,7 @@ public class PlayerController : MonoBehaviour
         if (aimDir.magnitude < 0.1f) aimDir = Vector2.right;
 
         float spreadAngle = 15f;
+        Vector2 firePos = firePoint != null ? (Vector2)firePoint.position : (Vector2)transform.position;
 
         for (int i = 0; i < projectileCount; i++)
         {
@@ -210,14 +212,10 @@ public class PlayerController : MonoBehaviour
             }
 
             Quaternion rotation = Quaternion.Euler(0, 0, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg + angleOffset);
-            GameObject proj = Instantiate(projectilePrefab, firePoint.position, rotation);
-            proj.SetActive(true); // prefab template is inactive
-            Projectile projScript = proj.GetComponent<Projectile>();
-            if (projScript != null)
-            {
-                bool isCrit = critChance > 0f && Random.value < critChance;
-                projScript.Initialize(damage, projectileSpeed, projectileSize, piercingShots, 10f, isCrit, chainLightning);
-            }
+            bool isCrit = critChance > 0f && Random.value < critChance;
+
+            Projectile.Create(firePos, rotation, damage, projectileSpeed, projectileSize,
+                piercingShots, 10f, isCrit, chainLightning);
         }
 
         // Muzzle flash / audio
