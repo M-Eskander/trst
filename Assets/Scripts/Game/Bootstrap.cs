@@ -106,6 +106,16 @@ public class Bootstrap : MonoBehaviour
             rootObjects.Add(obj);
     }
 
+    /// <summary>
+    /// Hide a template/prefab GameObject by moving it out of bounds.
+    /// Call after creating a prefab template so the template itself doesn't appear in play.
+    /// </summary>
+    void HideTemplate(GameObject obj)
+    {
+        if (obj != null)
+            obj.transform.position = new Vector3(9999, 9999, 0);
+    }
+
     void CreateGameSystems()
     {
         GameObject systemsObj = new GameObject("GameSystems");
@@ -162,7 +172,7 @@ public class Bootstrap : MonoBehaviour
     public static GameObject CreateEnemyBasePrefab(string name, ProceduralAssets.EnemyType type, Color color)
     {
         GameObject enemy = new GameObject(name);
-        enemy.SetActive(false);
+        // Keep active — Unity 6000 has issues with Instantiate from inactive prefabs
 
         var sr = enemy.AddComponent<SpriteRenderer>();
         Texture2D tex = ProceduralAssets.CreateEnemyTexture(type);
@@ -195,28 +205,32 @@ public class Bootstrap : MonoBehaviour
         basicEnemy.AddComponent<EnemyBase>();
         spawner.basicEnemyPrefab = basicEnemy;
         Track(basicEnemy);
+        HideTemplate(basicEnemy);
 
         GameObject fastEnemy = CreateEnemyBasePrefab("FastEnemy", ProceduralAssets.EnemyType.Fast, new Color(0.8f, 0.2f, 0.8f));
         fastEnemy.AddComponent<FastEnemy>();
         spawner.fastEnemyPrefab = fastEnemy;
         Track(fastEnemy);
+        HideTemplate(fastEnemy);
 
         GameObject tankEnemy = CreateEnemyBasePrefab("TankEnemy", ProceduralAssets.EnemyType.Tank, new Color(0.9f, 0.4f, 0.1f));
         tankEnemy.AddComponent<TankEnemy>();
         spawner.tankEnemyPrefab = tankEnemy;
         Track(tankEnemy);
+        HideTemplate(tankEnemy);
 
         // Create boss enemy prefab with unique texture
         GameObject bossEnemy = CreateBossPrefab("BossEnemy");
         bossEnemy.AddComponent<BossEnemy>();
         spawner.bossEnemyPrefab = bossEnemy;
         Track(bossEnemy);
+        HideTemplate(bossEnemy);
     }
 
     GameObject CreateBossPrefab(string name)
     {
         GameObject enemy = new GameObject(name);
-        enemy.SetActive(false);
+        // Keep active — Unity 6000 has issues with Instantiate from inactive prefabs
 
         var sr = enemy.AddComponent<SpriteRenderer>();
         Texture2D tex = ProceduralAssets.CreateBossTexture();
@@ -245,7 +259,7 @@ public class Bootstrap : MonoBehaviour
 
         // Create XP orb prefab
         GameObject orbPrefab = new GameObject("XPOrb");
-        orbPrefab.SetActive(false);
+        // Keep active — Unity 6000 has issues with Instantiate from inactive prefabs
 
         var sr = orbPrefab.AddComponent<SpriteRenderer>();
         Texture2D orbTex = ProceduralAssets.CreateXPOrbTexture();
@@ -260,6 +274,7 @@ public class Bootstrap : MonoBehaviour
 
         pool.xpOrbPrefab = orbPrefab;
         Track(orbPrefab);
+        HideTemplate(orbPrefab);
     }
 
     TMP_FontAsset GetOrCreateFont()

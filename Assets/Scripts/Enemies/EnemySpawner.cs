@@ -93,7 +93,7 @@ public class EnemySpawner : MonoBehaviour
             enemy.healthMultiplier = GameManager.Instance.GetEnemyHealthMultiplier();
             enemy.speedMultiplier = GameManager.Instance.GetEnemySpeedMultiplier();
         }
-        enemyObj.SetActive(true); // prefab templates are inactive
+        // Prefab templates are active (not inactive) — no need to SetActive(true)
 
         if (enemy != null)
         {
@@ -242,7 +242,7 @@ public class EnemySpawner : MonoBehaviour
             boss.speedMultiplier = 1f;
             activeBosses.Add(boss);
         }
-        bossObj.SetActive(true);
+        // Prefab template is active — no need to SetActive(true)
 
         // Big fanfare effect
         VFXManager.Instance?.SpawnExplosion(spawnPos, new Color(0.6f, 0.2f, 0.9f), 2f);

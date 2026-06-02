@@ -65,9 +65,18 @@ public class VFXManager : MonoBehaviour
         shape.shapeType = ParticleSystemShapeType.Circle;
         shape.radius = 0.3f;
 
-        // Use default particle material — always available, renders with startColor
+        // Use URP particles unlit shader — ensures particles render in builds
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material = null;
+        Material particleMat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+        if (particleMat != null)
+        {
+            particleMat.color = color;
+            renderer.material = particleMat;
+        }
+        else
+        {
+            renderer.material = null; // fallback to default
+        }
 
         go.SetActive(true);
         ps.Play();
