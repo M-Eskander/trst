@@ -19,16 +19,17 @@ public class Bootstrap : MonoBehaviour
         // Clean any leftover objects from a previous run (e.g. if script was recompiled)
         CleanupOldObjects();
 
-        // Set up the scene - order matters for dependencies
-        CreateGameSystems();
-        CreateCameraFollow();
-        CreateArena();
-        CreateAudio();
-        CreateVFX();
-        CreatePlayer();
-        CreateEnemySpawner();
-        CreateXPOrbPool();
-        CreateUI();
+        // Set up the scene - order matters for dependencies.
+        // Each step is isolated so one failure doesn't silently kill the rest.
+        SafeCreate(CreateGameSystems, "GameSystems");
+        SafeCreate(CreateCameraFollow, "CameraFollow");
+        SafeCreate(CreateArena, "Arena");
+        SafeCreate(CreateAudio, "Audio");
+        SafeCreate(CreateVFX, "VFX");
+        SafeCreate(CreatePlayer, "Player");
+        SafeCreate(CreateEnemySpawner, "EnemySpawner");
+        SafeCreate(CreateXPOrbPool, "XPOrbPool");
+        SafeCreate(CreateUI, "UI");
 
         // Make sure there's an EventSystem for UI
         if (FindFirstObjectByType<EventSystem>() == null)
@@ -41,6 +42,18 @@ public class Bootstrap : MonoBehaviour
         {
             if (obj != null && !obj.activeSelf && obj.transform.parent == null)
                 obj.transform.SetParent(transform);
+        }
+    }
+
+    void SafeCreate(System.Action createMethod, string label)
+    {
+        try
+        {
+            createMethod();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[Bootstrap] Failed to create {label}: {ex.Message}\n{ex.StackTrace}");
         }
     }
 
@@ -291,16 +304,21 @@ public class Bootstrap : MonoBehaviour
 
     TMP_FontAsset GetOrCreateFont()
     {
-        // Try to find any existing TMP font asset in the project
+        // Try to find any already-loaded TMP font asset
         var fonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
         if (fonts != null && fonts.Length > 0)
             return fonts[0];
 
-        // Try loading from common resource paths
-        TMP_FontAsset font = Resources.Load<TMP_FontAsset>("LiberationSans SDF");
+        // Try loading from TMP's Resources folder (correct subpath)
+        TMP_FontAsset font = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         if (font != null) return font;
 
-        // No font found — TMP will use its built-in fallback, which is fine
+        // Try the fallback asset
+        font = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF - Fallback");
+        if (font != null) return font;
+
+        // No TMP font found — TMP will use its built-in fallback, which is fine
+        Debug.LogWarning("[Bootstrap] No TMP font asset found — using fallback.");
         return null;
     }
 
@@ -1089,13 +1107,16 @@ public class Bootstrap : MonoBehaviour
             GameObject camObj = new GameObject("MainCamera", typeof(Camera), typeof(AudioListener));
             camObj.tag = "MainCamera"; // Camera.main searches by tag
             cam = camObj.GetComponent<Camera>();
-            cam.orthographic = true;
-            cam.orthographicSize = 10f;
-            cam.transform.position = new Vector3(0, 0, -10);
         }
 
+        // Always configure camera fully, whether it was the scene camera or a new one
+        cam.transform.position = new Vector3(0, 0, -10);
         cam.orthographic = true;
         cam.orthographicSize = 10f;
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = new Color(0.02f, 0.01f, 0.05f);
+        cam.nearClipPlane = 0.01f;
+        cam.farClipPlane = 100f;
 
         var cf = cam.GetComponent<CameraFollow>();
         if (cf == null) cf = cam.gameObject.AddComponent<CameraFollow>();
