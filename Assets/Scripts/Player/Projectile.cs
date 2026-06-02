@@ -49,8 +49,14 @@ public class Projectile : MonoBehaviour
         trail.time = 0.25f;
         trail.startWidth = 0.3f;
         trail.endWidth = 0f;
-        var trailMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        if (trailMat != null) trail.material = trailMat;
+        // Only set trail material if the shader is available in this build
+        // (Shader.Find returns null for shaders not compiled into the build)
+        Shader trailShader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (trailShader != null)
+        {
+            var trailMat = new Material(trailShader);
+            trail.material = trailMat;
+        }
 
         var proj = go.AddComponent<Projectile>();
         proj.Initialize(damage, speed, size, piercing, lifetime, crit, chain);

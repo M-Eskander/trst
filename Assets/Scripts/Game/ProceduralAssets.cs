@@ -242,6 +242,7 @@ public static class ProceduralAssets
         Texture2D tex = new Texture2D(size, size);
         Color clear = Color.clear;
         Color fill = Color.white;
+        Color bright = new Color(1f, 1f, 1f); // core highlight
         Color[] pixels = new Color[size * size];
 
         int r = size / 2;
@@ -249,10 +250,27 @@ public static class ProceduralAssets
         {
             for (int x = 0; x < size; x++)
             {
-                int dx = x - r;
-                int dy = y - r;
-                float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                pixels[y * size + x] = dist <= r * 0.7f ? fill : clear;
+                float nx = (x - r) / (float)r;
+                float ny = (y - r) / (float)r;
+
+                // Elongated diamond (pointing right = x positive)
+                float widthAtY = 1f - Mathf.Abs(ny) * 0.6f;
+                bool inside = nx >= -widthAtY * 0.3f && nx <= widthAtY && Mathf.Abs(ny) <= 1f;
+
+                // Sharper tip on the right side
+                if (inside && nx > widthAtY * 0.6f)
+                    inside = Mathf.Abs(ny) < 1f - (nx - widthAtY * 0.6f) / (widthAtY * 0.4f) * 0.8f;
+
+                if (inside)
+                {
+                    // Bright core near center
+                    float coreDist = Mathf.Sqrt(nx * nx + ny * ny);
+                    pixels[y * size + x] = coreDist < 0.3f ? bright : fill;
+                }
+                else
+                {
+                    pixels[y * size + x] = clear;
+                }
             }
         }
 

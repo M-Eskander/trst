@@ -156,8 +156,12 @@ public class Bootstrap : MonoBehaviour
         trail.endWidth = 0f;
         trail.startColor = new Color(0, 1, 1, 0.3f);
         trail.endColor = new Color(0, 1, 1, 0f);
-        var trailMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        if (trailMat != null) trail.material = trailMat;
+        Shader trailShader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (trailShader != null)
+        {
+            var trailMat = new Material(trailShader);
+            trail.material = trailMat;
+        }
 
         // Create fire point
         GameObject firePoint = new GameObject("FirePoint");
@@ -179,7 +183,11 @@ public class Bootstrap : MonoBehaviour
         sr.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 48);
         // Material is neutral white — the actual color is set by EnemyBase.Start() via spriteRenderer.color
         Material mat = ProceduralAssets.CreateNeonMaterial(Color.white, false);
-        if (mat == null) mat = new Material(Shader.Find("Sprites/Default"));
+        if (mat == null)
+        {
+            Shader fallbackShader = Shader.Find("Sprites/Default");
+            if (fallbackShader != null) mat = new Material(fallbackShader);
+        }
         sr.material = mat;
         sr.color = color;
         sr.sortingOrder = 15;
@@ -236,7 +244,11 @@ public class Bootstrap : MonoBehaviour
         Texture2D tex = ProceduralAssets.CreateBossTexture();
         sr.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 64);
         Material mat = ProceduralAssets.CreateNeonMaterial(Color.white, true);
-        if (mat == null) mat = new Material(Shader.Find("Sprites/Default"));
+        if (mat == null)
+        {
+            Shader fallbackShader = Shader.Find("Sprites/Default");
+            if (fallbackShader != null) mat = new Material(fallbackShader);
+        }
         sr.material = mat;
         sr.color = new Color(0.6f, 0.2f, 0.9f);
         sr.sortingOrder = 20; // above normal enemies
