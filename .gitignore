@@ -32,3 +32,8 @@
 .vscode/
 *.sln~
 *.csproj.user
+
+# Stray project files
+odysseus/
+mono_crash.*
+*.blob
